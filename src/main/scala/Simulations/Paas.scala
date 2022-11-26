@@ -30,16 +30,16 @@ object Paas{
     val logger = CreateLogger(classOf[Paas])
 
     val vms = config.getString("Paas.vm").toInt
-    
+
     val cloudSim1 = new CloudSim()
     val broker1 = new DatacenterBrokerSimple(cloudSim1)
     val datacenter1 = createDatacenter(cloudSim1,1)
-    val virtualMachine1 = createVm()
+    val virtualMachine1 = (1 to vms).map{i=>createVm(i,1)}.toList
     val cloudletListTaskA_1 = createCloudlets(1)
     val cloudletListTaskB_1= createCloudlets(2)
     val cloudletList = cloudletListTaskA_1.appendedAll(cloudletListTaskB_1)
     broker1.submitCloudletList(cloudletList.asJava)
-    broker1.submitVm(virtualMachine1)
+    broker1.submitVmList(virtualMachine1.asJava)
     cloudSim1.start()
     new CloudletsTableBuilder(broker1.getCloudletFinishedList()).build()
     printCost(broker1)
@@ -47,12 +47,12 @@ object Paas{
     val cloudSim2 = new CloudSim()
     val broker2 = new DatacenterBrokerSimple(cloudSim2)
     val datacenter2 = createDatacenter(cloudSim2,2)
-    val virtualMachine2 = createVm()
+    val virtualMachine2 = (1 to vms).map{i=>createVm(i,2)}.toList
     val cloudletListTaskA_2 = createCloudlets(1)
     val cloudletListTaskB_2 = createCloudlets(2)
     val cloudletList2 = cloudletListTaskA_2.appendedAll(cloudletListTaskB_2)
     broker2.submitCloudletList(cloudletList2.asJava)
-    broker2.submitVm(virtualMachine2)
+    broker2.submitVmList(virtualMachine2.asJava)
     cloudSim2.start()
     new CloudletsTableBuilder(broker2.getCloudletFinishedList()).build()
     printCost(broker2)
@@ -60,12 +60,12 @@ object Paas{
     val cloudSim3 = new CloudSim()
     val broker3 = new DatacenterBrokerSimple(cloudSim3)
     val datacenter3 = createDatacenter(cloudSim3,3)
-    val virtualMachine3 = createVm()
+    val virtualMachine3 = (1 to vms).map{i=>createVm(i,3)}.toList
     val cloudletListTaskA_3 = createCloudlets(1)
     val cloudletListTaskB_3 = createCloudlets(2)
     val cloudletList3 = cloudletListTaskA_3.appendedAll(cloudletListTaskB_3)
     broker3.submitCloudletList(cloudletList3.asJava)
-    broker3.submitVm(virtualMachine3)
+    broker3.submitVmList(virtualMachine3.asJava)
     cloudSim3.start()
     new CloudletsTableBuilder(broker3.getCloudletFinishedList()).build()
     printCost(broker3)
@@ -73,12 +73,12 @@ object Paas{
   }
 
   def createDatacenter(cloudSim : CloudSim,datacenterNumber : Int) : Datacenter = {
-    val num_hosts = config.getString("Saas.CloudProviderProperties.datacenter"+datacenterNumber+".hosts").toInt
-    val cost = config.getString("Saas.CloudProviderProperties.datacenter"+datacenterNumber+".cost").toDouble
-    val costPerMem = config.getString("Saas.CloudProviderProperties.datacenter"+datacenterNumber+".cpm").toDouble
-    val costPerStorage = config.getString("Saas.CloudProviderProperties.datacenter"+datacenterNumber+".cps").toDouble
-    val costPerBw = config.getString("Saas.CloudProviderProperties.datacenter"+datacenterNumber+".cpb").toDouble
-    val schedulingInterval = config.getString("Saas.CloudProviderProperties.datacenter"+datacenterNumber+".scheduling_interval").toInt
+    val num_hosts = config.getString("Paas.CloudProviderProperties.datacenter"+datacenterNumber+".hosts").toInt
+    val cost = config.getString("Paas.CloudProviderProperties.datacenter"+datacenterNumber+".cost").toDouble
+    val costPerMem = config.getString("Paas.CloudProviderProperties.datacenter"+datacenterNumber+".cpm").toDouble
+    val costPerStorage = config.getString("Paas.CloudProviderProperties.datacenter"+datacenterNumber+".cps").toDouble
+    val costPerBw = config.getString("Paas.CloudProviderProperties.datacenter"+datacenterNumber+".cpb").toDouble
+    val schedulingInterval = config.getString("Paas.CloudProviderProperties.datacenter"+datacenterNumber+".scheduling_interval").toInt
 
     val hostList = (1 to num_hosts).map{i=>createHost(i)}.toList
     val datacenter = new DatacenterSimple(cloudSim, hostList.asJava)
@@ -92,40 +92,45 @@ object Paas{
 
 
   def createHost(host_number : Int ) ={
-    val mips = config.getString("Saas.CloudProviderProperties.host"+host_number+".mipsCapacity").toInt
-    val hostPe = config.getString("Saas.CloudProviderProperties.host"+host_number+".Pes").toInt
+    val mips = config.getString("Paas.CloudProviderProperties.host"+host_number+".mipsCapacity").toInt
+    val hostPe = config.getString("Paas.CloudProviderProperties.host"+host_number+".Pes").toInt
     val peList = (1 to hostPe).map{_=>new PeSimple(mips).asInstanceOf[Pe]}.toList
-    val hostRam = config.getString("Saas.CloudProviderProperties.host"+host_number+".RAMInMBs").toInt
-    val storage = config.getString("Saas.CloudProviderProperties.host"+host_number+".StorageInMBs").toInt
-    val host_bw = config.getString("Saas.CloudProviderProperties.host"+host_number+".BandwidthInMBps").toInt
+    val hostRam = config.getString("Paas.CloudProviderProperties.host"+host_number+".RAMInMBs").toInt
+    val storage = config.getString("Paas.CloudProviderProperties.host"+host_number+".StorageInMBs").toInt
+    val host_bw = config.getString("Paas.CloudProviderProperties.host"+host_number+".BandwidthInMBps").toInt
     val host = new HostSimple(hostRam,host_bw,storage,peList.asJava)
     host.setVmScheduler(new VmSchedulerSpaceShared())
   }
 
-  def createVm() : Vm ={
-    val virtualMachine_Mips = config.getString("Saas.CloudProviderProperties.vm1.mipsCapacity").toInt
-    val virtualMachine_Pes = config.getString("Saas.CloudProviderProperties.vm1.pes").toInt
-    val virtualMachine_Ram = config.getString("Saas.CloudProviderProperties.vm1.RAMInMBs").toInt
-    val virtualMachine_Bw = config.getString("Saas.CloudProviderProperties.vm1.BandwidthInMBps").toInt
-    val virtualMachine_Size = config.getString("Saas.CloudProviderProperties.vm1.StorageInMBs").toInt
+  def createVm(vm_Number : Int,dc_number : Int) : Vm ={
+    val virtualMachine_Mips = config.getString("Paas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".mipsCapacity").toInt
+    val virtualMachine_Pes = config.getString("Paas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".pes").toInt
+    val virtualMachine_Ram = config.getString("Paas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".RAMInMBs").toInt
+    val virtualMachine_Bw = config.getString("Paas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".BandwidthInMBps").toInt
+    val virtualMachine_Size = config.getString("Paas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".StorageInMBs").toInt
+    val cloudletSched = config.getString("Paas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".cloudletSched")
     val vm = new VmSimple(virtualMachine_Mips,virtualMachine_Pes)
     vm.setRam(virtualMachine_Ram).setSize(virtualMachine_Size).setBw(virtualMachine_Bw)
-    vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
+    cloudletSched match {
+      case "TimeShared" => vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
+      case "SpaceShared" => vm.setCloudletScheduler(new CloudletSchedulerSpaceShared)
+      case default => vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
+    }
   }
 
   def createCloudlets(cloudLetNumber : Int) : List[Cloudlet] = {
-    val utilRatio = config.getString("Saas.utilizationRatio").toDouble
-    val MaxResourceUtil = config.getString("Saas.maxResourceRatio").toDouble
+    val utilRatio = config.getString("Paas.utilizationRatio").toDouble
+    val MaxResourceUtil = config.getString("Paas.maxResourceRatio").toDouble
     val utilModel = new UtilizationModelDynamic(0.3).setMaxResourceUtilization(0.5)
-    val cloudletNumber = config.getString("Saas.BrokerProperties.cloudlet"+cloudLetNumber+".number").toInt
+    val cloudletNumber = config.getString("Paas.BrokerProperties.cloudlet"+cloudLetNumber+".number").toInt
     val cloudletList = ListBuffer.empty [Cloudlet]
     create(cloudletNumber, utilModel, cloudletList)
 
     def create(number:Int, model:UtilizationModelDynamic, list : ListBuffer[Cloudlet]) : Unit ={
       if(number == 0) return
-      val cloudlet_Pes = config.getString("Saas.BrokerProperties.cloudlet"+cloudLetNumber+".pes").toInt
-      val cloudlet_Size = config.getString("Saas.BrokerProperties.cloudlet"+cloudLetNumber+".size").toInt
-      val cloudlet_FileSize = config.getString("Saas.BrokerProperties.cloudlet"+cloudLetNumber+".filesize").toInt
+      val cloudlet_Pes = config.getString("Paas.BrokerProperties.cloudlet"+cloudLetNumber+".pes").toInt
+      val cloudlet_Size = config.getString("Paas.BrokerProperties.cloudlet"+cloudLetNumber+".size").toInt
+      val cloudlet_FileSize = config.getString("Paas.BrokerProperties.cloudlet"+cloudLetNumber+".filesize").toInt
       val cloudlet = new CloudletSimple(cloudlet_Size, cloudlet_Pes, model).setSizes(cloudlet_FileSize)
       list += cloudlet
       create(number-1,model, list)
