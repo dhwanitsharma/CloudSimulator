@@ -15,3 +15,22 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % logbackVersion,
   "com.typesafe" % "config" % "1.4.2",
 )
+
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", xs@_*) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}
+
+enablePlugins(DockerPlugin)
+
+docker / dockerfile := {
+  // The assembly task generates a fat JAR file
+  val artifact: File = assembly.value
+  val artifactTargetPath = s"/app/${artifact.name}"
+
+  new Dockerfile {
+    from("openjdk:17-oracle")
+    add(artifact, artifactTargetPath)
+    entryPoint("java", "-jar", artifactTargetPath)
+  }
+}
