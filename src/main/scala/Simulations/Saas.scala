@@ -22,6 +22,31 @@ import com.typesafe.config.ConfigFactory
 class Saas {
 }
 
+/**
+ * Created a simulation which provides user an option to select the following 
+ * setting to run a Saas system.
+ * 1. Slow:
+   * Ram        : 1024
+   * Storage    : 1024
+   * BandWidth  : 1000
+   * Pes        : 2
+   * Mips       : 1000
+ * 
+ * 2. Medium:
+   * Ram        : 2048
+   * Storage    : 2048
+   * BandWidth  : 2000
+   * Pes        : 4
+   * Mips       : 2000  
+ * 
+ * 3. Fast
+   * Ram        : 4096
+   * Storage    : 4096
+   * BandWidth  : 4000
+   * Pes        : 8
+   * Mips       : 4000 
+ * 
+ */
 object Saas{
 
   val config = ConfigFactory.load("application.conf")
@@ -29,7 +54,9 @@ object Saas{
 
     val logger = CreateLogger(classOf[Saas])
 
-
+    /**
+     * Simulation to run the cloudsim for slow settings
+     */
     val cloudSim1 = new CloudSim()
     val broker1 = new DatacenterBrokerSimple(cloudSim1)
     val datacenter1 = createDatacenter(cloudSim1,1)
@@ -42,7 +69,9 @@ object Saas{
     cloudSim1.start()
     new CloudletsTableBuilder(broker1.getCloudletFinishedList()).build()
     printCost(broker1)
-
+    /**
+     * Simulation to run the cloudsim for medium settings
+     */
     val cloudSim2 = new CloudSim()
     val broker2 = new DatacenterBrokerSimple(cloudSim2)
     val datacenter2 = createDatacenter(cloudSim2,2)
@@ -55,7 +84,10 @@ object Saas{
     cloudSim2.start()
     new CloudletsTableBuilder(broker2.getCloudletFinishedList()).build()
     printCost(broker2)
-
+    
+    /**
+     * Simulation to run the cloudsim for high settings
+     */
     val cloudSim3 = new CloudSim()
     val broker3 = new DatacenterBrokerSimple(cloudSim3)
     val datacenter3 = createDatacenter(cloudSim3,3)
@@ -72,7 +104,14 @@ object Saas{
 
 
   }
-
+  
+  /**
+   * This function creates new datacenter for the experiment. Can edit the datacenter configurations from the
+   * application.conf Experiment1 file.
+   * The VmAllocation policy for this datacenter is the BestFitvMAllocation
+   * @param cloudSim : Input the cloudsim in which datacenter needs to be created.
+   * @return Datacenter : Newly Created Datacenter.
+   */
   def createDatacenter(cloudSim : CloudSim,datacenterNumber : Int) : Datacenter = {
     val num_hosts = config.getString("Saas.CloudProviderProperties.datacenter"+datacenterNumber+".hosts").toInt
     val cost = config.getString("Saas.CloudProviderProperties.datacenter"+datacenterNumber+".cost").toDouble
@@ -91,7 +130,11 @@ object Saas{
 
 
 
-
+  /**
+   * Function creates the host for the cloudsim datacenter.
+   * @param host_number : This number will read data from the application.conf file
+   * @return host : returns a host
+   */
   def createHost(host_number : Int ) ={
     val mips = config.getString("Saas.CloudProviderProperties.host"+host_number+".mipsCapacity").toInt
     val hostPe = config.getString("Saas.CloudProviderProperties.host"+host_number+".Pes").toInt
@@ -102,7 +145,11 @@ object Saas{
     val host = new HostSimple(hostRam,host_bw,storage,peList.asJava)
     host.setVmScheduler(new VmSchedulerSpaceShared())
   }
-
+  
+  /**
+   * Function creates the vm for the cloudsim. Can edit the vM configuration in the application.conf.Experiment2.vm
+   * @return Vm  : returns the Vm created
+   */
   def createVm(vm_Number : Int) : Vm ={
     val virtualMachine_Mips = config.getString("Saas.CloudProviderProperties.vm"+vm_Number+".mipsCapacity").toInt
     val virtualMachine_Pes = config.getString("Saas.CloudProviderProperties.vm"+vm_Number+".pes").toInt
@@ -114,6 +161,11 @@ object Saas{
     vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
   }
 
+  /**
+   * This function is used to create clouldlets for the experiment.
+   * @param cloudLetNumber : This number helps in getting the configuraiton from application.conf file
+   * @return List[[Cloudlet]] : Returns a list of Clouldlets.
+   */
   def createCloudlets(cloudLetNumber : Int) : List[Cloudlet] = {
     val utilRatio = config.getString("Saas.utilizationRatio").toDouble
     val MaxResourceUtil = config.getString("Saas.maxResourceRatio").toDouble
@@ -133,6 +185,10 @@ object Saas{
     }
     cloudletList.toList
   }
+  /**
+   * This function is used to print the cost of the simulation
+   * @param broker : The broker of the simulation
+   */
   def printCost(broker : DatacenterBrokerSimple) ={
     // Initialize variables
     var totalCost: Double           = 0

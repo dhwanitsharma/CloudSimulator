@@ -8,7 +8,7 @@ import org.cloudbus.cloudsim.core.CloudSim
 import org.cloudbus.cloudsim.datacenters.{Datacenter, DatacenterSimple}
 import org.cloudbus.cloudsim.hosts.HostSimple
 import org.cloudbus.cloudsim.resources.{Pe, PeSimple}
-import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerTimeShared
+import org.cloudbus.cloudsim.schedulers.cloudlet.{CloudletSchedulerSpaceShared, CloudletSchedulerTimeShared}
 import org.cloudbus.cloudsim.schedulers.vm.{VmSchedulerSpaceShared, VmSchedulerTimeShared}
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic
 import org.cloudbus.cloudsim.vms.{Vm, VmSimple}
@@ -16,7 +16,9 @@ import org.cloudsimplus.builders.tables.CloudletsTableBuilder
 import org.cloudbus.cloudsim.hosts.network.NetworkHost
 import org.cloudbus.cloudsim.network.topologies.{BriteNetworkTopology, NetworkTopology}
 import org.cloudbus.cloudsim.network.switches.EdgeSwitch
+import org.cloudbus.cloudsim.vms.network.NetworkVm
 
+import scala.util.Random
 import collection.mutable.*
 import scala.jdk.CollectionConverters.*
 import scala.collection.mutable.ListBuffer
@@ -59,12 +61,12 @@ object Experiment3{
     networkTopology.addLink(datacenter1,datacenter4,networkBw,networkLat)
     networkTopology.addLink(datacenter3,datacenter4,networkBw,networkLat)
 
-    val virtualMachine = (1 to 50).map{_=>createVm()}.toList
-    val cloudletList = createCloudlets()
+    val virtualMachine = (1 to 200).map{_=>createVm()}.toList
+    val cloudletList = createCloudlets(virtualMachine)
     broker.submitCloudletList(cloudletList.asJava)
     broker.submitVmList(virtualMachine.asJava)
     cloudSim.start()
-    new CloudletsTableBuilder(broker.getCloudletFinishedList()).build()
+    new CloudletsTableBuilder(broker.getCloudletFinishedList).build()
 
   }
 
@@ -111,18 +113,19 @@ object Experiment3{
     host
   }
 
-  def createVm() : Vm ={
+  def createVm() : NetworkVm ={
     val virtualMachine_Mips = config.getString("Experiment3.CloudProviderProperties.vm.mipsCapacity").toInt
     val virtualMachine_Pes = config.getString("Experiment3.CloudProviderProperties.vm.pes").toInt
     val virtualMachine_Ram = config.getString("Experiment3.CloudProviderProperties.vm.RAMInMBs").toInt
     val virtualMachine_Bw = config.getString("Experiment3.CloudProviderProperties.vm.BandwidthInMBps").toInt
     val virtualMachine_Size = config.getString("Experiment3.CloudProviderProperties.vm.StorageInMBs").toInt
-    val vm = new VmSimple(virtualMachine_Mips,virtualMachine_Pes)
+    val vm = new NetworkVm(virtualMachine_Mips,virtualMachine_Pes)
     vm.setRam(virtualMachine_Ram).setSize(virtualMachine_Size).setBw(virtualMachine_Bw)
     vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
+    vm
   }
 
-  def createCloudlets() : List[Cloudlet] = {
+  def createCloudlets(vmList:List[NetworkVm]) : List[Cloudlet] = {
     val utilRatio = config.getString("Experiment3.utilizationRatio").toDouble
     val MaxResourceUtil = config.getString("Experiment3.maxResourceRatio").toDouble
     val utilModel = new UtilizationModelDynamic(0.3).setMaxResourceUtilization(0.5)
@@ -139,6 +142,12 @@ object Experiment3{
       list += cloudlet
       create(number-1,model, list)
     }
+    cloudletList.foreach(cloudlet => {
+      val rand = Random.between(0,vmList.size)
+      val selectedVm = vmList.apply(rand)
+      cloudlet.setVm(selectedVm)
+      cloudlet.setBroker(selectedVm.getBroker)
+    })
     cloudletList.toList
   }
 
