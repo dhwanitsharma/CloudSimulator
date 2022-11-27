@@ -41,7 +41,7 @@ class Experiment2 {
  *  VmScheduler policy : One host has TimeShared Policy, One host has SpaceShared Policy
  */
 object Experiment2{
-
+  val logger = CreateLogger(classOf[Experiment2])
   val config = ConfigFactory.load("application.conf")
   def Start() :Unit = {
     val cloudletnum = config.getString("Experiment2.BrokerProperties.cloudletCount").toInt
@@ -60,7 +60,9 @@ object Experiment2{
     (1 to cloudletnum).map(i=>{cloudletList.addAll(createCloudlets(i))})
     broker.submitCloudletList(cloudletList.asJava)
     broker.submitVmList(virtualMachine.asJava)
+    logger.info("Starting the CloudSimulation1 for Experiment 2")
     cloudSim.start()
+    logger.info("Finishing the CloudSimulation1 for Experiment 2")
     new CloudletsTableBuilder(broker.getCloudletFinishedList()).build()
     printCost(broker)
 
@@ -77,7 +79,9 @@ object Experiment2{
     (1 to cloudletnum).map(i=>{cloudletList_SpaceShared.addAll(createCloudlets(i))})
     broker_SpaceShared.submitCloudletList(cloudletList_SpaceShared.asJava)
     broker_SpaceShared.submitVmList(virtualMachine_SpaceShared.asJava)
+    logger.info("Starting the CloudSimulation2 for Experiment 2")
     cloudSim_SpaceShared.start()
+    logger.info("Finishing the CloudSimulation2 for Experiment 2")
     new CloudletsTableBuilder(broker_SpaceShared.getCloudletFinishedList()).build()
     printCost(broker_SpaceShared)
 
@@ -94,7 +98,9 @@ object Experiment2{
     (1 to cloudletnum).map(i=>{cloudletList_Mix.addAll(createCloudlets(i))})
     broker_Mix.submitCloudletList(cloudletList_Mix.asJava)
     broker_Mix.submitVmList(virtualMachine_SpaceShared.asJava)
+    logger.info("Starting the CloudSimulation3 for Experiment 2")
     cloudSim_Mix.start()
+    logger.info("Finishing the CloudSimulation3 for Experiment 2")
     new CloudletsTableBuilder(broker_Mix.getCloudletFinishedList()).build()
     printCost(broker_Mix)
 
@@ -121,6 +127,7 @@ object Experiment2{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicyBestFit())
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter.setSchedulingInterval(schedulingInterval)
   }
 
@@ -145,6 +152,7 @@ object Experiment2{
     }else{
        host.setVmScheduler(new VmSchedulerSpaceShared())
     }
+    logger.info("Created Host "+ host.getId)
     host
   }
   /**
@@ -159,6 +167,7 @@ object Experiment2{
     val virtualMachine_Size = config.getString("Experiment2.CloudProviderProperties.vm.StorageInMBs").toInt
     val vm = new VmSimple(virtualMachine_Mips,virtualMachine_Pes)
     vm.setRam(virtualMachine_Ram).setSize(virtualMachine_Size).setBw(virtualMachine_Bw)
+    logger.info("Created VM"+vm.getId)
     vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
   }
 
@@ -183,6 +192,7 @@ object Experiment2{
       val cloudlet_FileSize = config.getString("Experiment2.BrokerProperties.cloudlet"+cloudLetNumber+".filesize").toInt
       val cloudlet = new CloudletSimple(cloudlet_Size, cloudlet_Pes, model).setSizes(cloudlet_FileSize)
       list += cloudlet
+      logger.info("Created cloudlet"+cloudlet.getId)
       create(number-1,model, list)
     }
     cloudletList.toList

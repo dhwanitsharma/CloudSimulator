@@ -25,6 +25,7 @@ class Paas {
  * Created a simulation which provides user an option to select the following 
  * setting to run a Paas system. Each system has 2 vms, this can changed from 
  * application.conf
+ * 
  * 1. Slow (2 vms):
  * Ram        : 1024
  * Storage    : 1024
@@ -50,9 +51,10 @@ class Paas {
 object Paas{
 
   val config = ConfigFactory.load("application.conf")
+  val logger = CreateLogger(classOf[Paas])
   def Start() :Unit = {
 
-    val logger = CreateLogger(classOf[Paas])
+   
 
     val vms = config.getString("Paas.vm").toInt
     
@@ -68,7 +70,9 @@ object Paas{
     val cloudletList = cloudletListTaskA_1.appendedAll(cloudletListTaskB_1)
     broker1.submitCloudletList(cloudletList.asJava)
     broker1.submitVmList(virtualMachine1.asJava)
+    logger.info("Starting the CloudSimulation for Paas slow")
     cloudSim1.start()
+    logger.info("Finishing the CloudSimulation for Paas slow")
     new CloudletsTableBuilder(broker1.getCloudletFinishedList()).build()
     printCost(broker1)
     /**
@@ -83,7 +87,9 @@ object Paas{
     val cloudletList2 = cloudletListTaskA_2.appendedAll(cloudletListTaskB_2)
     broker2.submitCloudletList(cloudletList2.asJava)
     broker2.submitVmList(virtualMachine2.asJava)
+    logger.info("Starting the CloudSimulation for Paas med")
     cloudSim2.start()
+    logger.info("Finishing the CloudSimulation for Paas med")
     new CloudletsTableBuilder(broker2.getCloudletFinishedList()).build()
     printCost(broker2)
     /**
@@ -98,7 +104,9 @@ object Paas{
     val cloudletList3 = cloudletListTaskA_3.appendedAll(cloudletListTaskB_3)
     broker3.submitCloudletList(cloudletList3.asJava)
     broker3.submitVmList(virtualMachine3.asJava)
+    logger.info("Starting the CloudSimulation for Paas high")
     cloudSim3.start()
+    logger.info("Starting the CloudSimulation for Paas high")
     new CloudletsTableBuilder(broker3.getCloudletFinishedList()).build()
     printCost(broker3)
 
@@ -123,6 +131,7 @@ object Paas{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicyBestFit())
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter.setSchedulingInterval(schedulingInterval)
   }
 
@@ -142,6 +151,7 @@ object Paas{
     val storage = config.getString("Paas.CloudProviderProperties.host"+host_number+".StorageInMBs").toInt
     val host_bw = config.getString("Paas.CloudProviderProperties.host"+host_number+".BandwidthInMBps").toInt
     val host = new HostSimple(hostRam,host_bw,storage,peList.asJava)
+    logger.info("Created Host "+ host.getId)
     host.setVmScheduler(new VmSchedulerSpaceShared())
   }
   /**
@@ -156,6 +166,7 @@ object Paas{
     val virtualMachine_Size = config.getString("Paas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".StorageInMBs").toInt
     val cloudletSched = config.getString("Paas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".cloudletSched")
     val vm = new VmSimple(virtualMachine_Mips,virtualMachine_Pes)
+    logger.info("Created VM"+vm.getId)
     vm.setRam(virtualMachine_Ram).setSize(virtualMachine_Size).setBw(virtualMachine_Bw)
     cloudletSched match {
       case "TimeShared" => vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
@@ -183,6 +194,7 @@ object Paas{
       val cloudlet_FileSize = config.getString("Paas.BrokerProperties.cloudlet"+cloudLetNumber+".filesize").toInt
       val cloudlet = new CloudletSimple(cloudlet_Size, cloudlet_Pes, model).setSizes(cloudlet_FileSize)
       list += cloudlet
+      logger.info("Created cloudlet"+cloudlet.getId)
       create(number-1,model, list)
     }
     cloudletList.toList

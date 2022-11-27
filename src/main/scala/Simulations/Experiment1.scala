@@ -28,11 +28,11 @@ class Experiment1 {
  * The experiment 1 runs all 4 simulations simultaneously and prints the results in the console.
  */
 object Experiment1{
-
+  val logger = CreateLogger(classOf[Experiment1])
   val config = ConfigFactory.load("application.conf")
   def Start() :Unit = {
 
-    val logger = CreateLogger(classOf[Experiment1])
+
 
     val cloudletnum = config.getString("Experiment1.BrokerProperties.cloudletCount").toInt
     val vm = config.getString("Experiment1.CloudProviderProperties.datacenter.vm").toInt
@@ -49,7 +49,9 @@ object Experiment1{
     (1 to cloudletnum).map(i=>{cloudletList.addAll(createCloudlets(i))})
     broker.submitCloudletList(cloudletList.asJava)
     broker.submitVmList(virtualMachine.asJava)
+    logger.info("Starting the CloudSimulation1 for Experiment 1")
     cloudSim.start()
+    logger.info("Finishing the CloudSimulation1 for Experiment 1")
     new CloudletsTableBuilder(broker.getCloudletFinishedList()).build()
     printCost(broker)
 
@@ -64,7 +66,9 @@ object Experiment1{
     (1 to cloudletnum).map(i=>{cloudletList_round.addAll(createCloudlets(i))})
     broker_round.submitCloudletList(cloudletList_round.asJava)
     broker_round.submitVmList(virtualMachine_round.asJava)
+    logger.info("Starting the CloudSimulation2 for Experiment 1")
     cloudSim_round.start()
+    logger.info("Finishing the CloudSimulation2 for Experiment 1")
     new CloudletsTableBuilder(broker_round.getCloudletFinishedList()).build()
     printCost(broker_round)
 
@@ -79,7 +83,9 @@ object Experiment1{
     (1 to cloudletnum).map(i=>{cloudletList_bestFit.addAll(createCloudlets(i))})
     broker_bestFit.submitCloudletList(cloudletList_bestFit.asJava)
     broker_bestFit.submitVmList(virtualMachine_bestFit.asJava)
+    logger.info("Starting the CloudSimulation3 for Experiment 1")
     cloudSim_bestFit.start()
+    logger.info("Finishing the CloudSimulation3 for Experiment 1")
     new CloudletsTableBuilder(broker_bestFit.getCloudletFinishedList()).build()
     printCost(broker_bestFit)
 
@@ -94,7 +100,9 @@ object Experiment1{
     (1 to cloudletnum).map(i=>{cloudletList_firstFit.addAll(createCloudlets(i))})
     broker_firstFit.submitCloudletList(cloudletList_firstFit.asJava)
     broker_firstFit.submitVmList(virtualMachine_firstFit.asJava)
+    logger.info("Starting the CloudSimulation4 for Experiment 1")
     cloudSim_firstFit.start()
+    logger.info("Finishing the CloudSimulation4 for Experiment 1")
     new CloudletsTableBuilder(broker_firstFit.getCloudletFinishedList()).build()
     printCost(broker_firstFit)
 
@@ -109,7 +117,9 @@ object Experiment1{
     (1 to cloudletnum).map(i=>{cloudletList_Random.addAll(createCloudlets(i))})
     broker_Random.submitCloudletList(cloudletList_Random.asJava)
     broker_Random.submitVmList(virtualMachine_Random.asJava)
+    logger.info("Starting the CloudSimulation5 for Experiment 1")
     cloudSim_Random.start()
+    logger.info("Finishing the CloudSimulation5 for Experiment 1")
     new CloudletsTableBuilder(broker_Random.getCloudletFinishedList()).build()
     printCost(broker_Random)
 
@@ -136,6 +146,7 @@ object Experiment1{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicySimple())
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter.setSchedulingInterval(schedulingInterval)
   }
 
@@ -158,6 +169,7 @@ object Experiment1{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicyRoundRobin())
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter
   }
 
@@ -180,6 +192,7 @@ object Experiment1{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicyBestFit())
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter
   }
 
@@ -202,6 +215,7 @@ object Experiment1{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicyFirstFit())
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter
   }
 
@@ -224,6 +238,7 @@ object Experiment1{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicyRandom())
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter
   }
 
@@ -240,6 +255,7 @@ object Experiment1{
     val storage = config.getString("Experiment1.CloudProviderProperties.host"+host_number+".StorageInMBs").toInt
     val host_bw = config.getString("Experiment1.CloudProviderProperties.host"+host_number+".BandwidthInMBps").toInt
     val host = new HostSimple(hostRam,host_bw,storage,peList.asJava)
+    logger.info("Created Host "+ host.getId)
     host.setVmScheduler(new VmSchedulerSpaceShared())
   }
 
@@ -255,6 +271,7 @@ object Experiment1{
     val virtualMachine_Size = config.getString("Experiment1.CloudProviderProperties.vm.StorageInMBs").toInt
     val vm = new VmSimple(virtualMachine_Mips,virtualMachine_Pes)
     vm.setRam(virtualMachine_Ram).setSize(virtualMachine_Size).setBw(virtualMachine_Bw)
+    logger.info("Created VM"+vm.getId)
     vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
   }
 
@@ -277,6 +294,7 @@ object Experiment1{
       val cloudlet_Size = config.getString("Experiment1.BrokerProperties.cloudlet"+cloudLetNumber+".size").toInt
       val cloudlet_FileSize = config.getString("Experiment1.BrokerProperties.cloudlet"+cloudLetNumber+".filesize").toInt
       val cloudlet = new CloudletSimple(cloudlet_Size, cloudlet_Pes, model).setSizes(cloudlet_FileSize)
+      logger.info("Created cloudlet"+cloudlet.getId)
       list += cloudlet
       create(number-1,model, list)
     }

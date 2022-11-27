@@ -1,6 +1,7 @@
 package Simulations
 
 import HelperUtils.CreateLogger
+import Simulations.Iaas.logger
 import org.cloudbus.cloudsim.allocationpolicies.{VmAllocationPolicyBestFit, VmAllocationPolicyFirstFit, VmAllocationPolicyRoundRobin, VmAllocationPolicySimple}
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple
 import org.cloudbus.cloudsim.cloudlets.{Cloudlet, CloudletSimple}
@@ -25,6 +26,7 @@ class Saas {
 /**
  * Created a simulation which provides user an option to select the following 
  * setting to run a Saas system.
+ * 
  * 1. Slow:
    * Ram        : 1024
    * Storage    : 1024
@@ -50,9 +52,10 @@ class Saas {
 object Saas{
 
   val config = ConfigFactory.load("application.conf")
+  val logger = CreateLogger(classOf[Saas])
   def Start() :Unit = {
 
-    val logger = CreateLogger(classOf[Saas])
+    
 
     /**
      * Simulation to run the cloudsim for slow settings
@@ -66,7 +69,9 @@ object Saas{
     val cloudletList = cloudletListTaskA_1.appendedAll(cloudletListTaskB_1)
     broker1.submitCloudletList(cloudletList.asJava)
     broker1.submitVm(virtualMachine1)
+    logger.info("Starting the CloudSimulation for Saas slow")
     cloudSim1.start()
+    logger.info("Finishing the CloudSimulation for Saas slow")
     new CloudletsTableBuilder(broker1.getCloudletFinishedList()).build()
     printCost(broker1)
     /**
@@ -81,7 +86,9 @@ object Saas{
     val cloudletList2 = cloudletListTaskA_2.appendedAll(cloudletListTaskB_2)
     broker2.submitCloudletList(cloudletList2.asJava)
     broker2.submitVm(virtualMachine2)
+    logger.info("Starting the CloudSimulation for Saas med")
     cloudSim2.start()
+    logger.info("Finishing the CloudSimulation for Saas med")
     new CloudletsTableBuilder(broker2.getCloudletFinishedList()).build()
     printCost(broker2)
     
@@ -97,7 +104,9 @@ object Saas{
     val cloudletList3 = cloudletListTaskA_3.appendedAll(cloudletListTaskB_3)
     broker3.submitCloudletList(cloudletList3.asJava)
     broker3.submitVm(virtualMachine3)
+    logger.info("Starting the CloudSimulation for Saas high")
     cloudSim3.start()
+    logger.info("Finishing the CloudSimulation for Saas high")
     new CloudletsTableBuilder(broker3.getCloudletFinishedList()).build()
     printCost(broker3)
 
@@ -125,6 +134,7 @@ object Saas{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicyBestFit())
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter.setSchedulingInterval(schedulingInterval)
   }
 
@@ -143,6 +153,7 @@ object Saas{
     val storage = config.getString("Saas.CloudProviderProperties.host"+host_number+".StorageInMBs").toInt
     val host_bw = config.getString("Saas.CloudProviderProperties.host"+host_number+".BandwidthInMBps").toInt
     val host = new HostSimple(hostRam,host_bw,storage,peList.asJava)
+    logger.info("Created Host "+ host.getId)
     host.setVmScheduler(new VmSchedulerSpaceShared())
   }
   
@@ -158,6 +169,7 @@ object Saas{
     val virtualMachine_Size = config.getString("Saas.CloudProviderProperties.vm"+vm_Number+".StorageInMBs").toInt
     val vm = new VmSimple(virtualMachine_Mips,virtualMachine_Pes)
     vm.setRam(virtualMachine_Ram).setSize(virtualMachine_Size).setBw(virtualMachine_Bw)
+    logger.info("Created VM"+vm.getId)
     vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
   }
 
@@ -181,6 +193,7 @@ object Saas{
       val cloudlet_FileSize = config.getString("Saas.BrokerProperties.cloudlet"+cloudLetNumber+".filesize").toInt
       val cloudlet = new CloudletSimple(cloudlet_Size, cloudlet_Pes, model).setSizes(cloudlet_FileSize)
       list += cloudlet
+      logger.info("Created cloudlet"+cloudlet.getId)
       create(number-1,model, list)
     }
     cloudletList.toList

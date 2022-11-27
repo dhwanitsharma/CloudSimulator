@@ -30,9 +30,8 @@ class Experiment3 {
 
 object Experiment3{
   val config = ConfigFactory.load("application.conf")
-
+  val logger = CreateLogger(classOf[Experiment3])
   def Start() :Unit = {
-    val logger = CreateLogger(classOf[Experiment2])
     val cloudSim = new CloudSim()
     val broker = new DatacenterBrokerSimple(cloudSim)
 
@@ -47,14 +46,14 @@ object Experiment3{
     val networkTopology = new BriteNetworkTopology()
     cloudSim.setNetworkTopology(networkTopology)
 
-
+    logger.info("Adding networklink with broker")
     // Add link between datacenter and broker
     networkTopology.addLink(datacenter1,broker,networkBw,networkLat)
     networkTopology.addLink(datacenter2,broker,networkBw,networkLat)
     networkTopology.addLink(datacenter3,broker,networkBw,networkLat)
     networkTopology.addLink(datacenter4,broker,networkBw,networkLat)
 
-
+    logger.info("Adding networklink with datacenters")
     //Add link between the 4 data centers
     networkTopology.addLink(datacenter1,datacenter2,networkBw,networkLat)
     networkTopology.addLink(datacenter1,datacenter3,networkBw,networkLat)
@@ -65,7 +64,9 @@ object Experiment3{
     val cloudletList = createCloudlets(virtualMachine)
     broker.submitCloudletList(cloudletList.asJava)
     broker.submitVmList(virtualMachine.asJava)
+    logger.info("Starting the CloudSimulation for Experiment 3")
     cloudSim.start()
+    logger.info("Starting the CloudSimulation for Experiment 3")
     new CloudletsTableBuilder(broker.getCloudletFinishedList).build()
 
   }
@@ -93,6 +94,7 @@ object Experiment3{
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setSchedulingInterval(schedulingInterval)
     createNetwork(datacenter, cloudSim)
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter
   }
 
@@ -110,6 +112,7 @@ object Experiment3{
       host.setVmScheduler(new VmSchedulerTimeShared())
     }else{
       host.setVmScheduler(new VmSchedulerSpaceShared())}
+    logger.info("Created Host "+ host.getId)
     host
   }
 
@@ -122,6 +125,7 @@ object Experiment3{
     val vm = new NetworkVm(virtualMachine_Mips,virtualMachine_Pes)
     vm.setRam(virtualMachine_Ram).setSize(virtualMachine_Size).setBw(virtualMachine_Bw)
     vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
+    logger.info("Created VM"+vm.getId)
     vm
   }
 
@@ -140,6 +144,7 @@ object Experiment3{
       val cloudlet_FileSize = config.getString("Experiment3.BrokerProperties.cloudlet.filesize").toInt
       val cloudlet = new CloudletSimple(cloudlet_Size, cloudlet_Pes, model).setSizes(cloudlet_FileSize)
       list += cloudlet
+      logger.info("Created cloudlet"+cloudlet.getId)
       create(number-1,model, list)
     }
     cloudletList.foreach(cloudlet => {
@@ -159,6 +164,7 @@ object Experiment3{
     }
     val hostList = dc.getHostList[NetworkHost]
     hostList.forEach(host => {
+      logger.info("Adding swith for "+ host.getId)
       val switchNum = getSwitchIndex(host, edgeSwitches(0).getPorts)
       edgeSwitches(switchNum).connectHost(host)
     })

@@ -21,13 +21,62 @@ import com.typesafe.config.ConfigFactory
 
 class Iaas {
 }
+/**
+ * Created a simulation which provides user an option to select the following 
+ * setting to run a Paas system. Each system has 2 vms, this can changed from 
+ * application.conf
+ *
+1. Slow:
+   1. 4 vms of
+ * Ram        : 1024
+ * Storage    : 1024
+ * BandWidth  : 1000
+ * Pes        : 2
+ * Mips       : 1000
+   2. 2 vms of 
+ * Ram        : 2048
+ * Storage    : 2048
+ * BandWidth  : 2000
+ * Pes        : 4
+ * Mips       : 2000
+
+2. Medium:
+   1. 1 vms of
+ * Ram        : 2048
+ * Storage    : 2048
+ * BandWidth  : 2000
+ * Pes        : 4
+ * Mips       : 2000
+   2. 1 vm of 
+ * Ram        : 2048
+ * Storage    : 2048
+ * BandWidth  : 4000
+ * Pes        : 8
+ * Mips       : 4000
+   3. 1 vm of 
+ * Ram        : 1024
+ * Storage    : 1024
+ * BandWidth  : 1000
+ * Pes        : 2
+ * Mips       : 1000
+
+3. Fast: 
+   1. 2 vms of 
+ * Ram        : 2048
+ * Storage    : 2048
+ * BandWidth  : 4000
+ * Pes        : 8
+ * Mips       : 4000
+ *
+ */
 object Iaas{
 
   val config = ConfigFactory.load("application.conf")
+  val logger = CreateLogger(classOf[Iaas])
   def Start() :Unit = {
-
-    val logger = CreateLogger(classOf[Iaas])
-
+    /**
+     * Simulation to run the cloudsim for slow settings
+     */
     val vm1 = config.getString("Iaas.CloudProviderProperties.datacenter1.vm").toInt
     val cloudSim1 = new CloudSim()
     val broker1 = new DatacenterBrokerSimple(cloudSim1)
@@ -38,11 +87,15 @@ object Iaas{
     val cloudletList = cloudletListTaskA_1.appendedAll(cloudletListTaskB_1)
     broker1.submitCloudletList(cloudletList.asJava)
     broker1.submitVmList(virtualMachine1.asJava)
+    logger.info("Starting the CloudSimulation for Iaas slow")
     cloudSim1.start()
+    logger.info("Finishing the CloudSimulation for Iaas slow")
     new CloudletsTableBuilder(broker1.getCloudletFinishedList()).build()
     printCost(broker1)
 
-
+    /**
+     * Simulation to run the cloudsim for med settings
+     */
     val vm2 = config.getString("Iaas.CloudProviderProperties.datacenter2.vm").toInt
     val cloudSim2 = new CloudSim()
     val broker2 = new DatacenterBrokerSimple(cloudSim2)
@@ -53,10 +106,14 @@ object Iaas{
     val cloudletList2 = cloudletListTaskA_2.appendedAll(cloudletListTaskB_2)
     broker2.submitCloudletList(cloudletList2.asJava)
     broker2.submitVmList(virtualMachine2.asJava)
+    logger.info("Starting the CloudSimulation for Iaas med")
     cloudSim2.start()
+    logger.info("Finishin the CloudSimulation for Iaas med")
     new CloudletsTableBuilder(broker2.getCloudletFinishedList()).build()
     printCost(broker2)
-
+    /**
+     * Simulation to run the cloudsim for high settings
+     */
     val vm3 = config.getString("Iaas.CloudProviderProperties.datacenter3.vm").toInt
     val cloudSim3 = new CloudSim()
     val broker3 = new DatacenterBrokerSimple(cloudSim3)
@@ -67,14 +124,20 @@ object Iaas{
     val cloudletList3 = cloudletListTaskA_3.appendedAll(cloudletListTaskB_3)
     broker3.submitCloudletList(cloudletList3.asJava)
     broker3.submitVmList(virtualMachine3.asJava)
+    logger.info("Starting the CloudSimulation for Iaas high")
     cloudSim3.start()
+    logger.info("Finishing the CloudSimulation for Iaas high")
     new CloudletsTableBuilder(broker3.getCloudletFinishedList()).build()
     printCost(broker3)
 
-
-
   }
-
+  /**
+   * This function creates new datacenter for the experiment. Can edit the datacenter configurations from the
+   * application.conf Experiment1 file.
+   * The VmAllocation policy for this datacenter is the BestFitvMAllocation
+   * @param cloudSim : Input the cloudsim in which datacenter needs to be created.
+   * @return Datacenter : Newly Created Datacenter.
+   */
   def createDatacenter(cloudSim : CloudSim,datacenterNumber : Int) : Datacenter = {
     val num_hosts = config.getString("Iaas.CloudProviderProperties.datacenter"+datacenterNumber+".hosts").toInt
     val cost = config.getString("Iaas.CloudProviderProperties.datacenter"+datacenterNumber+".cost").toDouble
@@ -88,12 +151,17 @@ object Iaas{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicyBestFit())
+    logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter.setSchedulingInterval(schedulingInterval)
   }
 
 
 
-
+  /**
+   * Function creates the host for the cloudsim datacenter.
+   * @param host_number : This number will read data from the application.conf file
+   * @return host : returns a host
+   */
   def createHost(host_number : Int ) ={
     val mips = config.getString("Iaas.CloudProviderProperties.host"+host_number+".mipsCapacity").toInt
     val hostPe = config.getString("Iaas.CloudProviderProperties.host"+host_number+".Pes").toInt
@@ -102,9 +170,13 @@ object Iaas{
     val storage = config.getString("Iaas.CloudProviderProperties.host"+host_number+".StorageInMBs").toInt
     val host_bw = config.getString("Iaas.CloudProviderProperties.host"+host_number+".BandwidthInMBps").toInt
     val host = new HostSimple(hostRam,host_bw,storage,peList.asJava)
+    logger.info("Created Host "+ host.getId)
     host.setVmScheduler(new VmSchedulerSpaceShared())
   }
-
+  /**
+   * Function creates the vm for the cloudsim. Can edit the vM configuration in the application.conf.Experiment2.vm
+   * @return Vm  : returns the Vm created
+   */
   def createVm(vm_Number : Int,dc_number : Int) : Vm ={
     val virtualMachine_Mips = config.getString("Iaas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".mipsCapacity").toInt
     val virtualMachine_Pes = config.getString("Iaas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".pes").toInt
@@ -114,13 +186,18 @@ object Iaas{
     val cloudletSched = config.getString("Iaas.CloudProviderProperties.vm"+vm_Number+"-dc"+dc_number+".cloudletSched")
     val vm = new VmSimple(virtualMachine_Mips,virtualMachine_Pes)
     vm.setRam(virtualMachine_Ram).setSize(virtualMachine_Size).setBw(virtualMachine_Bw)
+    logger.info("Created VM"+vm.getId)
     cloudletSched match {
       case "TimeShared" => vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
       case "SpaceShared" => vm.setCloudletScheduler(new CloudletSchedulerSpaceShared)
       case default => vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
     }
   }
-
+  /**
+   * This function is used to create clouldlets for the experiment.
+   * @param cloudLetNumber : This number helps in getting the configuraiton from application.conf file
+   * @return List[[Cloudlet]] : Returns a list of Clouldlets.
+   */
   def createCloudlets(cloudLetNumber : Int) : List[Cloudlet] = {
     val utilRatio = config.getString("Iaas.utilizationRatio").toDouble
     val MaxResourceUtil = config.getString("Iaas.maxResourceRatio").toDouble
@@ -136,10 +213,16 @@ object Iaas{
       val cloudlet_FileSize = config.getString("Iaas.BrokerProperties.cloudlet"+cloudLetNumber+".filesize").toInt
       val cloudlet = new CloudletSimple(cloudlet_Size, cloudlet_Pes, model).setSizes(cloudlet_FileSize)
       list += cloudlet
+      logger.info("Created cloudlet"+cloudlet.getId)
       create(number-1,model, list)
     }
     cloudletList.toList
   }
+  
+  /**
+   * This function is used to print the cost of the simulation
+   * @param broker : The broker of the simulation
+   */
   def printCost(broker : DatacenterBrokerSimple) ={
     // Initialize variables
     var totalCost: Double           = 0
