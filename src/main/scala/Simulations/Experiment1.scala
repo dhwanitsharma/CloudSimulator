@@ -1,7 +1,7 @@
 package Simulations
 
-import HelperUtils.CreateLogger
-import org.cloudbus.cloudsim.allocationpolicies.{VmAllocationPolicyBestFit, VmAllocationPolicyRoundRobin, VmAllocationPolicySimple,VmAllocationPolicyFirstFit}
+import HelperUtils.{CreateLogger, VmAllocationPolicyRandom}
+import org.cloudbus.cloudsim.allocationpolicies.{VmAllocationPolicyBestFit, VmAllocationPolicyFirstFit, VmAllocationPolicyRoundRobin, VmAllocationPolicySimple}
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple
 import org.cloudbus.cloudsim.cloudlets.{Cloudlet, CloudletSimple}
 import org.cloudbus.cloudsim.core.CloudSim
@@ -37,6 +37,10 @@ object Experiment1{
     val cloudletnum = config.getString("Experiment1.BrokerProperties.cloudletCount").toInt
     val vm = config.getString("Experiment1.CloudProviderProperties.datacenter.vm").toInt
 
+
+    /**
+     * Simulation for Simple VmAllocation Method
+     */
     val cloudSim = new CloudSim()
     val broker = new DatacenterBrokerSimple(cloudSim)
     val datacenter = createDatacenter(cloudSim)
@@ -49,7 +53,9 @@ object Experiment1{
     new CloudletsTableBuilder(broker.getCloudletFinishedList()).build()
     printCost(broker)
 
-
+    /**
+     * Simulation for Round-robin VmAllocation Method
+     */
     val cloudSim_round = new CloudSim()
     val broker_round = new DatacenterBrokerSimple(cloudSim_round)
     val datacenter_round = createDatacenter_Round(cloudSim_round)
@@ -62,6 +68,9 @@ object Experiment1{
     new CloudletsTableBuilder(broker_round.getCloudletFinishedList()).build()
     printCost(broker_round)
 
+    /**
+     * Simulation for Best-fit VmAllocation Method
+     */
     val cloudSim_bestFit = new CloudSim()
     val broker_bestFit = new DatacenterBrokerSimple(cloudSim_bestFit)
     val datacenter_bestFit = createDatacenter_bestFit(cloudSim_bestFit)
@@ -74,7 +83,9 @@ object Experiment1{
     new CloudletsTableBuilder(broker_bestFit.getCloudletFinishedList()).build()
     printCost(broker_bestFit)
 
-
+    /**
+     * Simulation for First-fit VmAllocation Method
+     */
     val cloudSim_firstFit = new CloudSim()
     val broker_firstFit = new DatacenterBrokerSimple(cloudSim_firstFit)
     val datacenter_firstFit = createDatacenter_firstFit(cloudSim_firstFit)
@@ -87,7 +98,23 @@ object Experiment1{
     new CloudletsTableBuilder(broker_firstFit.getCloudletFinishedList()).build()
     printCost(broker_firstFit)
 
+    /**
+     * Simulation for First-fit VmAllocation Method
+     */
+    val cloudSim_Random = new CloudSim()
+    val broker_Random = new DatacenterBrokerSimple(cloudSim_Random)
+    val datacenter_Random = createDatacenter_Random(cloudSim_Random)
+    val virtualMachine_Random = (1 to vm).map{_=>createVm()}.toList
+    val cloudletList_Random = ListBuffer.empty [Cloudlet]
+    (1 to cloudletnum).map(i=>{cloudletList_Random.addAll(createCloudlets(i))})
+    broker_Random.submitCloudletList(cloudletList_Random.asJava)
+    broker_Random.submitVmList(virtualMachine_Random.asJava)
+    cloudSim_Random.start()
+    new CloudletsTableBuilder(broker_Random.getCloudletFinishedList()).build()
+    printCost(broker_Random)
+
   }
+
 
   /**
    * This function creates new datacenter for the experiment. Can edit the datacenter configurations from the
@@ -175,6 +202,28 @@ object Experiment1{
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
     datacenter.setVmAllocationPolicy(new VmAllocationPolicyFirstFit())
+    datacenter
+  }
+
+  /**
+   * This function creates new datacenter for the experiment. Can edit the datacenter configurations from the
+   * application.conf Experiment1 file.
+   * The VmAllocation policy for this datacenter is the Custom Random vMAllocation
+   * @param cloudSim : Input the cloudsim in which datacenter needs to be created.
+   * @return Datacenter : Newly Created Datacenter.
+   */
+  def createDatacenter_Random(cloudSim : CloudSim) : Datacenter = {
+    val num_hosts = config.getString("Experiment1.CloudProviderProperties.datacenter.hosts").toInt
+    val cost = config.getString("Experiment1.CloudProviderProperties.datacenter.cost").toDouble
+    val costPerMem = config.getString("Experiment1.CloudProviderProperties.datacenter.cpm").toDouble
+    val costPerStorage = config.getString("Experiment1.CloudProviderProperties.datacenter.cps").toDouble
+    val costPerBw = config.getString("Experiment1.CloudProviderProperties.datacenter.cpb").toDouble
+
+    val hostList = (1 to num_hosts).map{i=>createHost(i)}.toList
+    val datacenter = new DatacenterSimple(cloudSim, hostList.asJava)
+    datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
+      .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
+    datacenter.setVmAllocationPolicy(new VmAllocationPolicyRandom())
     datacenter
   }
 

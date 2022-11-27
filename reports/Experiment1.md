@@ -29,10 +29,16 @@ This is a really computationally complex policy since the worst-case complexity 
 A First Fit VM allocation policy which finds the first Host having suitable resources to place a given VM. This is a high time-efficient policy with a best-case complexity O(1) and a worst-case complexity O(N), where N is the number of Hosts.
 ![BestFit](Images/vmAllocation_FirstFit.PNG)
 
+
+### Random VmAllocation
+A Custom Made Random vMallocation policy, which assigns the vms randomly
+![Random](Images/vmAllocation_Random.PNG)
+
 ## Observations
 The following was observed from the experiment:
 1. The Allocation policy has no affect on the cost in the four mertics.
 2. In each of the simulations, Vms are distributed differently. Simple and First Fit allocation are similar in the way the allote the VMs
 3. In Round Robin the VM's are allocated in a sequential manner where VM1 is allocated to Host1, VM2 is allocated to Host2 and VM3 is allocated to Host3
 4. In BestFit, most of the Vm's are assigned to the Host 2 as this is the best fit
+5. In Random, all the VM's are randomly distributed
 
