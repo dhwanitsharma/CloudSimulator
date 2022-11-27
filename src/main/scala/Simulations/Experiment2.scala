@@ -1,7 +1,7 @@
 package Simulations
 
 import HelperUtils.CreateLogger
-import org.cloudbus.cloudsim.allocationpolicies.{VmAllocationPolicyBestFit, VmAllocationPolicyRoundRobin, VmAllocationPolicySimple,VmAllocationPolicyFirstFit}
+import org.cloudbus.cloudsim.allocationpolicies.{VmAllocationPolicyBestFit, VmAllocationPolicyFirstFit, VmAllocationPolicyRoundRobin, VmAllocationPolicySimple}
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple
 import org.cloudbus.cloudsim.cloudlets.{Cloudlet, CloudletSimple}
 import org.cloudbus.cloudsim.core.CloudSim
@@ -11,7 +11,7 @@ import org.cloudbus.cloudsim.resources.{Pe, PeSimple}
 import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerTimeShared
 import org.cloudbus.cloudsim.schedulers.vm.{VmSchedulerSpaceShared, VmSchedulerTimeShared}
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic
-import org.cloudbus.cloudsim.vms.{Vm, VmSimple}
+import org.cloudbus.cloudsim.vms.{Vm, VmCost, VmSimple}
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder
 
 import collection.mutable.*
@@ -56,13 +56,13 @@ object Experiment2{
     val broker = new DatacenterBrokerSimple(cloudSim)
     val datacenter = createDatacenter(cloudSim,1)
     val virtualMachine = (1 to vm).map{_=>createVm()}.toList
-    //val cloudletList = createCloudlets()
     val cloudletList = ListBuffer.empty [Cloudlet]
     (1 to cloudletnum).map(i=>{cloudletList.addAll(createCloudlets(i))})
     broker.submitCloudletList(cloudletList.asJava)
     broker.submitVmList(virtualMachine.asJava)
     cloudSim.start()
     new CloudletsTableBuilder(broker.getCloudletFinishedList()).build()
+    printCost(broker)
 
     /**
      *  Simulation 2:
@@ -73,13 +73,13 @@ object Experiment2{
     val broker_SpaceShared = new DatacenterBrokerSimple(cloudSim_SpaceShared)
     val datacenter_SpaceShared = createDatacenter(cloudSim_SpaceShared,3)
     val virtualMachine_SpaceShared = (1 to vm).map{_=>createVm()}.toList
-    //val cloudletList_SpaceShared = createCloudlets()
     val cloudletList_SpaceShared = ListBuffer.empty [Cloudlet]
     (1 to cloudletnum).map(i=>{cloudletList_SpaceShared.addAll(createCloudlets(i))})
     broker_SpaceShared.submitCloudletList(cloudletList_SpaceShared.asJava)
     broker_SpaceShared.submitVmList(virtualMachine_SpaceShared.asJava)
     cloudSim_SpaceShared.start()
     new CloudletsTableBuilder(broker_SpaceShared.getCloudletFinishedList()).build()
+    printCost(broker_SpaceShared)
 
     /**
      *  Simulation 3:
@@ -90,18 +90,24 @@ object Experiment2{
     val broker_Mix = new DatacenterBrokerSimple(cloudSim_Mix)
     val datacenter_Mix = createDatacenter(cloudSim_Mix,5)
     val virtualMachine_Mix = (1 to vm).map{_=>createVm()}.toList
-    //val cloudletList_Mix = createCloudlets()
     val cloudletList_Mix = ListBuffer.empty [Cloudlet]
     (1 to cloudletnum).map(i=>{cloudletList_Mix.addAll(createCloudlets(i))})
     broker_Mix.submitCloudletList(cloudletList_Mix.asJava)
     broker_Mix.submitVmList(virtualMachine_SpaceShared.asJava)
     cloudSim_Mix.start()
     new CloudletsTableBuilder(broker_Mix.getCloudletFinishedList()).build()
+    printCost(broker_Mix)
 
 
 
   }
-
+  /**
+   * This function creates new datacenter for the experiment. Can edit the datacenter configurations from the
+   * application.conf Experiment1 file.
+   * The VmAllocation policy for this datacenter is the Custom Random vMAllocation
+   * @param cloudSim : Input the cloudsim in which datacenter needs to be created.
+   * @return Datacenter : Newly Created Datacenter.
+   */
   def createDatacenter(cloudSim : CloudSim,iteration : Int) : Datacenter = {
     val num_hosts = config.getString("Experiment2.CloudProviderProperties.datacenter.hosts")
     val cost = config.getString("Experiment2.CloudProviderProperties.datacenter.cost").toDouble
@@ -119,7 +125,11 @@ object Experiment2{
   }
 
 
-
+  /**
+   * Function creates the host for the cloudsim datacenter.
+   * @param host_number : This number will read data from the application.conf file
+   * @return host : returns a host
+   */
   def createHost(host_number : Int ) ={
     val scheduler = config.getString("Experiment2.CloudProviderProperties.host"+host_number+".schedule")
     val mips = config.getString("Experiment2.CloudProviderProperties.host"+host_number+".mipsCapacity").toInt
@@ -133,9 +143,14 @@ object Experiment2{
     if(scheduler.equals("TimeShared")) {
        host.setVmScheduler(new VmSchedulerTimeShared())
     }else{
-       host.setVmScheduler(new VmSchedulerSpaceShared())}
+       host.setVmScheduler(new VmSchedulerSpaceShared())
+    }
+    host
   }
-
+  /**
+   * Function creates the vm for the cloudsim. Can edit the vM configuration in the application.conf.Experiment2.vm
+   * @return Vm  : returns the Vm created
+   */
   def createVm() : Vm ={
     val virtualMachine_Mips = config.getString("Experiment2.CloudProviderProperties.vm.mipsCapacity").toInt
     val virtualMachine_Pes = config.getString("Experiment2.CloudProviderProperties.vm.pes").toInt
@@ -147,25 +162,7 @@ object Experiment2{
     vm.setCloudletScheduler(new CloudletSchedulerTimeShared)
   }
 
- /* def createCloudlets() : List[Cloudlet] = {
-    val utilRatio = config.getString("Experiment2.utilizationRatio").toDouble
-    val MaxResourceUtil = config.getString("Experiment2.maxResourceRatio").toDouble
-    val utilModel = new UtilizationModelDynamic(0.3).setMaxResourceUtilization(0.5)
-    val cloudletNumber = config.getString("Experiment2.BrokerProperties.cloudlet.number").toInt
-    val cloudletList = ListBuffer.empty [Cloudlet]
-    create(cloudletNumber, utilModel, cloudletList)
 
-    def create(number:Int, model:UtilizationModelDynamic, list : ListBuffer[Cloudlet]) : Unit ={
-      if(number == 0) return
-      val cloudlet_Pes = config.getString("Experiment2.BrokerProperties.cloudlet.pes").toInt
-      val cloudlet_Size = config.getString("Experiment2.BrokerProperties.cloudlet.size").toInt
-      val cloudlet_FileSize = config.getString("Experiment2.BrokerProperties.cloudlet.filesize").toInt
-      val cloudlet = new CloudletSimple(cloudlet_Size, cloudlet_Pes, model).setSizes(cloudlet_FileSize)
-      list += cloudlet
-      create(number-1,model, list)
-    }
-    cloudletList.toList
-  }*/
   /**
    * This function is used to create clouldlets for the experiment.
    * @param cloudLetNumber : This number helps in getting the configuraiton from application.conf file
@@ -189,5 +186,30 @@ object Experiment2{
       create(number-1,model, list)
     }
     cloudletList.toList
+  }
+
+  /**
+   * This function is used to print the cost of the simulation
+   * @param broker : The broker of the simulation
+   */
+  def printCost(broker : DatacenterBrokerSimple) ={
+    // Initialize variables
+    var totalCost: Double           = 0
+    var totalNonIdleVms: Int        = 0
+    var processingTotalCost: Double = 0
+    var memoryTotalCost: Double     = 0
+    var storageTotalCost: Double    = 0
+    var bwTotalCost: Double         = 0
+
+    // For each VM object, create a VmCost object and extract the costs and prints it
+    for (vm <- broker.getVmCreatedList.asScala) {
+      val cost: VmCost      = new VmCost(vm)
+      processingTotalCost   += cost.getProcessingCost
+      memoryTotalCost       += cost.getMemoryCost
+      storageTotalCost      += cost.getStorageCost
+      bwTotalCost           += cost.getBwCost
+      totalCost             += cost.getTotalCost
+      System.out.println(cost)
+    }
   }
 }
