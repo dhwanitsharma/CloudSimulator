@@ -76,7 +76,7 @@ and add the argument as per the Map mentioned above to run a particular simulati
 In this experiment, all the simulations are run on the same configurations of Datacenter, hosts, VM and cloudlets.
 I have also implemented a custom random vmAllocation policy for this experiment.
 
-The result of the experiment can be found here : **[Experiment1 - Report](report/Experiment1.md)**
+The result of the experiment can be found here : **[Experiment1 - Report](reports/Experiment1.md)**
 
 
 ### Experiment 2 : Compare different VM scheduling policies(Space shared, Time Shared)
@@ -87,12 +87,12 @@ I have simulated the following scenarios:
 2. We have two hosts with TimeShared Scheduling
 3. We have one host SpaceShared and one host Timeshared
 
-The result of the experiment can be found here : **[Experiment2 - Report](report/Experiment2.md)**
+The result of the experiment can be found here : **[Experiment2 - Report](reports/Experiment2.md)**
 
 ### Experiment 3 : Implemented a network topology for different datacenters
 In this experiment, I have simulated brite topology
 
-The result of the experiment can be found here : **[Experiment3 - Report](report/Experiment3.md)**
+The result of the experiment can be found here : **[Experiment3 - Report](reports/Experiment3.md)**
 
 ### Experiment 4 : Saas Simulator
 Created a simulation which provides user an option to select the following setting to run a Saas system.
@@ -100,7 +100,7 @@ Created a simulation which provides user an option to select the following setti
 2. Medium: Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000
 3. Fast Ram : 4096 Storage : 4096 BandWidth : 4000 Pes : 8 Mips : 4000
 
-The result of the experiment can be found here : **[Saas - Report](report/Saas.md)**
+The result of the experiment can be found here : **[Saas - Report](reports/Saas.md)**
 
 ### Experiment 5 : Paas Simulator
 
@@ -109,7 +109,7 @@ Created a simulation which provides user an option to select the following setti
 2. Medium (2 vms): Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000
 3. Fast (2 vms) Ram : 2048 Storage : 2048 BandWidth : 4000 Pes : 8 Mips : 4000
 
-The result of the experiment can be found here : **[Paas - Report](report/Paas.md)**
+The result of the experiment can be found here : **[Paas - Report](reports/Paas.md)**
 
 ### Experiment 6 : Iaas Simulator
 
@@ -122,7 +122,7 @@ Each system has 2 vms, this can changed from application.conf
    2. 1 vm of Ram : 1024 Storage : 1024 BandWidth : 1000 Pes : 2 Mips : 1000 
 3. Fast: 1. 2 vms of Ram : 2048 Storage : 2048 BandWidth : 4000 Pes : 8 Mips : 4000
 
-The result of the experiment can be found here : **[Iaas - Report](report/Iaas.md)**
+The result of the experiment can be found here : **[Iaas - Report](reports/Iaas.md)**
 
 
 ## Output
