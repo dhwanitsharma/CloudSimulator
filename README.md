@@ -115,26 +115,24 @@ The result of the experiment can be found here : **[Paas - Report](reports/Paas.
 
 Created a simulation which provides user an option to select the following setting to run a Paas system. 
 Each system has 2 vms, this can changed from application.conf 
-1. Slow: 1. 4 vms of Ram : 1024 Storage : 1024 BandWidth : 1000 Pes : 2 Mips : 1000 
-   1. 2 vms of Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000 
-2. Medium: 1. 1 vms of Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000 
-   1. 1 vm of Ram : 2048 Storage : 2048 BandWidth : 4000 Pes : 8 Mips : 4000 
-   2. 1 vm of Ram : 1024 Storage : 1024 BandWidth : 1000 Pes : 2 Mips : 1000 
-3. Fast: 1. 2 vms of Ram : 2048 Storage : 2048 BandWidth : 4000 Pes : 8 Mips : 4000
+1. Slow: 
+   1. 4 vms of Ram : 1024 Storage : 1024 BandWidth : 1000 Pes : 2 Mips : 1000 
+   2. 2 vms of Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000 
+2. Medium: 
+   1. 1 vms of Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000 
+   2. 1 vm of Ram : 2048 Storage : 2048 BandWidth : 4000 Pes : 8 Mips : 4000 
+   3. 1 vm of Ram : 1024 Storage : 1024 BandWidth : 1000 Pes : 2 Mips : 1000 
+3. Fast: 
+   1. 2 vms of Ram : 2048 Storage : 2048 BandWidth : 4000 Pes : 8 Mips : 4000
 
 The result of the experiment can be found here : **[Iaas - Report](reports/Iaas.md)**
 
 
 ## Output
-The output will be as follows:
-1. If the pattern is found in the log files, the console of client will print out the following:
+The sample output of the simulation is as follows:
+![Sample](reports/Images/Iaas1.PNG)
 
-`Log messages are found with hash <MD5 HASHCODE> `
 
-2. If the pattern is not found in the log files, the console of client will print out the following:
-
-`No log statements found for given parameters`
-
-## AWS Deployment
-As shown in the video, build the file using ```sbt clean compile assembly``` to build the jar. The jar is then uploaded to the Lambda function. Use the instruction in the video to set
-and test the Lambda function. Video for the project <a href="https://youtu.be/hTdQP7JUfa0" target="_blank">Video</a> 
+## References
+- [CloudSim Plus](https://cloudsimplus.org/)
+- [CloudSim Plus Examples](https://github.com/manoelcampos/cloudsimplus/tree/master/cloudsim-plus-examples)
