@@ -33,4 +33,5 @@ docker / dockerfile := {
     add(artifact, artifactTargetPath)
     entryPoint("java", "-jar", artifactTargetPath)
   }
+
 }
