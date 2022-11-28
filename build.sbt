@@ -14,6 +14,8 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-core" % logbackVersion,
   "ch.qos.logback" % "logback-classic" % logbackVersion,
   "com.typesafe" % "config" % "1.4.2",
+  "org.scalatest"%%"scalatest"%"3.2.14"%Test,
+  "org.scalatest"%%"scalatest-featurespec"%"3.2.14"%Test,
 )
 
 assemblyMergeStrategy in assembly := {

@@ -134,14 +134,14 @@ object Experiment1{
    * @return Datacenter : Newly Created Datacenter.
    */
   def createDatacenter(cloudSim : CloudSim) : Datacenter = {
-    val num_hosts = config.getString("Experiment1.CloudProviderProperties.datacenter.hosts")
+    val num_hosts = config.getString("Experiment1.CloudProviderProperties.datacenter.hosts").toInt
     val cost = config.getString("Experiment1.CloudProviderProperties.datacenter.cost").toDouble
     val costPerMem = config.getString("Experiment1.CloudProviderProperties.datacenter.cpm").toDouble
     val costPerStorage = config.getString("Experiment1.CloudProviderProperties.datacenter.cps").toDouble
     val costPerBw = config.getString("Experiment1.CloudProviderProperties.datacenter.cpb").toDouble
     val schedulingInterval = config.getString("Experiment1.CloudProviderProperties.datacenter.scheduling_interval").toInt
 
-    val hostList = (1 to 3).map{i=>createHost(i)}.toList
+    val hostList = (1 to num_hosts).map{i=>createHost(i)}.toList
     val datacenter = new DatacenterSimple(cloudSim, hostList.asJava)
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
@@ -158,13 +158,13 @@ object Experiment1{
    * @return Datacenter : Newly Created Datacenter.
    */
   def createDatacenter_Round(cloudSim : CloudSim) : Datacenter = {
-    val num_hosts = config.getString("Experiment1.CloudProviderProperties.datacenter.hosts")
+    val num_hosts = config.getString("Experiment1.CloudProviderProperties.datacenter.hosts").toInt
     val cost = config.getString("Experiment1.CloudProviderProperties.datacenter.cost").toDouble
     val costPerMem = config.getString("Experiment1.CloudProviderProperties.datacenter.cpm").toDouble
     val costPerStorage = config.getString("Experiment1.CloudProviderProperties.datacenter.cps").toDouble
     val costPerBw = config.getString("Experiment1.CloudProviderProperties.datacenter.cpb").toDouble
 
-    val hostList = (1 to 3).map{i=>createHost(i)}.toList
+    val hostList = (1 to num_hosts).map{i=>createHost(i)}.toList
     val datacenter = new DatacenterSimple(cloudSim, hostList.asJava)
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)
@@ -181,13 +181,13 @@ object Experiment1{
    * @return Datacenter : Newly Created Datacenter.
    */
   def createDatacenter_bestFit(cloudSim : CloudSim) : Datacenter = {
-    val num_hosts = config.getString("Experiment1.CloudProviderProperties.datacenter.hosts")
+    val num_hosts = config.getString("Experiment1.CloudProviderProperties.datacenter.hosts").toInt
     val cost = config.getString("Experiment1.CloudProviderProperties.datacenter.cost").toDouble
     val costPerMem = config.getString("Experiment1.CloudProviderProperties.datacenter.cpm").toDouble
     val costPerStorage = config.getString("Experiment1.CloudProviderProperties.datacenter.cps").toDouble
     val costPerBw = config.getString("Experiment1.CloudProviderProperties.datacenter.cpb").toDouble
 
-    val hostList = (1 to 3).map{i=>createHost(i)}.toList
+    val hostList = (1 to num_hosts).map{i=>createHost(i)}.toList
     val datacenter = new DatacenterSimple(cloudSim, hostList.asJava)
     datacenter.getCharacteristics().setCostPerSecond(cost).setCostPerMem(costPerMem)
       .setCostPerStorage(costPerStorage).setCostPerBw(costPerBw)

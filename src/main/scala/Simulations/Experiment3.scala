@@ -40,6 +40,7 @@ object Experiment3{
 
     val networkLat = config.getString("Experiment3.networkLatencyBetweenDC").toInt
     val networkBw = config.getString("Experiment3.networkBwBetweenDc").toInt
+    val vm = config.getString("Experiment3.CloudProviderProperties.datacenter.vm").toInt
 
     /**
      * Building the datacenters
@@ -67,7 +68,7 @@ object Experiment3{
     networkTopology.addLink(datacenter1,datacenter4,networkBw,networkLat)
     networkTopology.addLink(datacenter3,datacenter4,networkBw,networkLat)
 
-    val virtualMachine = (1 to 20).map{_=>createVm()}.toList
+    val virtualMachine = (1 to vm).map{_=>createVm()}.toList
     val cloudletList = createCloudlets(virtualMachine)
     broker.submitCloudletList(cloudletList.asJava)
     broker.submitVmList(virtualMachine.asJava)
