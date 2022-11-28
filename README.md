@@ -30,8 +30,8 @@ The project structure is as follows:
             3. Simulation.scala
     2. test --- Contains all the test files.
         1. scala
-            1. TestApplicationConf.scala
-            2. TestPattern.scala
+            1. ConfigTest.scala
+            2. FunctionalTest.scala
 
 ## Installation Instructions
 
