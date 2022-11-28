@@ -72,42 +72,58 @@ git@github.com:dhwanitsharma/CloudSimulator.git
 and add the argument as per the Map mentioned above to run a particular simulation
 
 ## Experiment Description
-### Task 1 : Upload the LogGenerator into a EC2 instance and save the logs in a S3 bucket.
-The LogGenerator generates logs based on the config file. I have updated the LogGenerator File to make a new log file every 5 minutes. To achieve this
-I have used a class file which extends the RollingFileAppender class. Example of the file name of the log generated is ```LogFileGenerator-20221028-19-20``` where
-20221028 is the date in YYYYMMDD format, and 19-20 is the time, in HH-MM format.
+### Experiment 1 : Comparing performance of Simple, Round Robin, Best Fit, First Fit and Custom  vmAllocation policy 
+In this experiment, all the simulations are run on the same configurations of Datacenter, hosts, VM and cloudlets.
+I have also implemented a custom random vmAllocation policy for this experiment.
 
-After the logs are generated, I have created a S3Uploader class which will upload the log directory in the S3 bucket. For the purpose of this project all the logs are generated for a single day.
+The result of the experiment can be found here : **[Experiment1 - Report](report/Experiment1.md)**
 
-### Task 2 : Create a Lambda function to detect a certain pattern in the log messages
-The Lambda function has two major parts:
-1. First it iterates through the file name which on the basis of the timestamp. It calculates the starting time and ending time bases on the
-   time and the interval provided in the input. Using this time frame, function iterates through the folder and reads the file name of all the log files. It compares the HH-MM part of the file name with the interval
-   and makes a ```list of key``` of the logs in the bucket. If the input time range logs are not available, function returns a string ```false```.
-2. If the list is populated then we iterate through the file list, the timeStamps are taken as an array. Using the binary search, we find the closest value to the start and end time in the array. Using this we get
-   the index of the messages which are in desired time interval. Using this index we slice the original log file and iterate through those logs
-   to find the ```pattern``` in the log messages. Example:
-    1. In the list, we have a log file from index 0 to 10000. The starting time stamp is 19:20:00 and ending time stamp 19:25:00. The target value is 19:22 with interval of 00:01. Now the starting interval is 19:21:00 and ending is 19:23:00.
-    2. We find the starting closest index of 19:21 as 2500 and closest index 19:23 as 7500. Now, we use these indexes 2500 and 7500 to slice the original log file, and return the MD5 hash of the log message which is matched to the input ``pattern``
 
-### Task 3 : Create a gRPC Server
-Created a gRPC server, which calls the Lambda function. The gRPC Server uses the protobuf to define the structure for the data. The server uses ``Rest POST`` call to the Lambda function. The example of the JSON used by the server.
-```
-{
-    "interval" : "00:02:00",
-    "time" : "2022-10-28-19-22-00-000",
-    "pattern" : "Rsxg"
-}
-```
+### Experiment 2 : Compare different VM scheduling policies(Space shared, Time Shared)
+In this experiment, all the simulations are run on the same configurations of Datacenter, hosts, VM and cloudlets.
 
-### Task 4 : Create a gRPC Client
-Created a gRPC client, which calls the gRPC server. The gRPC client also uses the protobuf to define the structure for the data. The client uses ```S3.conf``` configuration file for input where the inputs are defined ```grpc``` section of the file.
-The client uses the following as inputs:
-```
-time = "2022-10-28-19-22-00:000"
-detect_patter = "Rsxg"
-interval = "00:02:00"
-```
+I have simulated the following scenarios:
+1. We have two hosts with SpaceShared Scheduling
+2. We have two hosts with TimeShared Scheduling
+3. We have one host SpaceShared and one host Timeshared
+
+The result of the experiment can be found here : **[Experiment2 - Report](report/Experiment2.md)**
+
+### Experiment 3 : Implemented a network topology for different datacenters
+In this experiment, I have simulated brite topology
+
+The result of the experiment can be found here : **[Experiment3 - Report](report/Experiment3.md)**
+
+### Experiment 4 : Saas Simulator
+Created a simulation which provides user an option to select the following setting to run a Saas system.
+1. Slow: Ram : 1024 Storage : 1024 BandWidth : 1000 Pes : 2 Mips : 1000
+2. Medium: Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000
+3. Fast Ram : 4096 Storage : 4096 BandWidth : 4000 Pes : 8 Mips : 4000
+
+The result of the experiment can be found here : **[Saas - Report](report/Saas.md)**
+
+### Experiment 5 : Paas Simulator
+
+Created a simulation which provides user an option to select the following setting to run a Paas system. Each system has 2 vms, this can changed from application.conf
+1. Slow (2 vms): Ram : 1024 Storage : 1024 BandWidth : 1000 Pes : 2 Mips : 1000
+2. Medium (2 vms): Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000
+3. Fast (2 vms) Ram : 2048 Storage : 2048 BandWidth : 4000 Pes : 8 Mips : 4000
+
+The result of the experiment can be found here : **[Paas - Report](report/Paas.md)**
+
+### Experiment 6 : Iaas Simulator
+
+Created a simulation which provides user an option to select the following setting to run a Paas system. 
+Each system has 2 vms, this can changed from application.conf 
+1. Slow: 1. 4 vms of Ram : 1024 Storage : 1024 BandWidth : 1000 Pes : 2 Mips : 1000 
+   1. 2 vms of Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000 
+2. Medium: 1. 1 vms of Ram : 2048 Storage : 2048 BandWidth : 2000 Pes : 4 Mips : 2000 
+   1. 1 vm of Ram : 2048 Storage : 2048 BandWidth : 4000 Pes : 8 Mips : 4000 
+   2. 1 vm of Ram : 1024 Storage : 1024 BandWidth : 1000 Pes : 2 Mips : 1000 
+3. Fast: 1. 2 vms of Ram : 2048 Storage : 2048 BandWidth : 4000 Pes : 8 Mips : 4000
+
+The result of the experiment can be found here : **[Iaas - Report](report/Iaas.md)**
+
 
 ## Output
 The output will be as follows:

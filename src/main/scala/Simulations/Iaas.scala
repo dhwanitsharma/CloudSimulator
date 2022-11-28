@@ -23,7 +23,7 @@ class Iaas {
 }
 /**
  * Created a simulation which provides user an option to select the following 
- * setting to run a Paas system. Each system has 2 vms, this can changed from 
+ * setting to run a Iaas system. Each system has 2 vms, this can changed from
  * application.conf
  *
 1. Slow:
@@ -33,6 +33,7 @@ class Iaas {
  * BandWidth  : 1000
  * Pes        : 2
  * Mips       : 1000
+ *
    2. 2 vms of 
  * Ram        : 2048
  * Storage    : 2048
@@ -47,12 +48,14 @@ class Iaas {
  * BandWidth  : 2000
  * Pes        : 4
  * Mips       : 2000
+ *
    2. 1 vm of 
  * Ram        : 2048
  * Storage    : 2048
  * BandWidth  : 4000
  * Pes        : 8
  * Mips       : 4000
+ *
    3. 1 vm of 
  * Ram        : 1024
  * Storage    : 1024
