@@ -28,6 +28,9 @@ import org.cloudbus.cloudsim.datacenters.network.NetworkDatacenter
 class Experiment3 {
 }
 
+/**
+ * Implementing 4 datastructures with a brite Topology
+ */
 object Experiment3{
   val config = ConfigFactory.load("application.conf")
   val logger = CreateLogger(classOf[Experiment3])
@@ -38,6 +41,9 @@ object Experiment3{
     val networkLat = config.getString("Experiment3.networkLatencyBetweenDC").toInt
     val networkBw = config.getString("Experiment3.networkBwBetweenDc").toInt
 
+    /**
+     * Building the datacenters
+     */
     val datacenter1 = createDatacenter(cloudSim,1)
     val datacenter2 = createDatacenter(cloudSim,1)
     val datacenter3 = createDatacenter(cloudSim,1)
@@ -45,6 +51,7 @@ object Experiment3{
 
     val networkTopology = new BriteNetworkTopology()
     cloudSim.setNetworkTopology(networkTopology)
+
 
     logger.info("Adding networklink with broker")
     // Add link between datacenter and broker
@@ -60,7 +67,7 @@ object Experiment3{
     networkTopology.addLink(datacenter1,datacenter4,networkBw,networkLat)
     networkTopology.addLink(datacenter3,datacenter4,networkBw,networkLat)
 
-    val virtualMachine = (1 to 200).map{_=>createVm()}.toList
+    val virtualMachine = (1 to 20).map{_=>createVm()}.toList
     val cloudletList = createCloudlets(virtualMachine)
     broker.submitCloudletList(cloudletList.asJava)
     broker.submitVmList(virtualMachine.asJava)
@@ -71,7 +78,13 @@ object Experiment3{
 
   }
 
-
+  /**
+   * This function creates new datacenter for the experiment. Can edit the datacenter configurations from the
+   * application.conf Experiment1 file.
+   * The VmAllocation policy for this datacenter is the BestFitvMAllocation
+   * @param cloudSim : Input the cloudsim in which datacenter needs to be created.
+   * @return Datacenter : Newly Created Datacenter.
+   */
   def createDatacenter(cloudSim : CloudSim,iteration : Int) : NetworkDatacenter = {
     val num_hosts = config.getString("Experiment3.CloudProviderProperties.datacenter.hosts").toInt
     val cost = config.getString("Experiment3.CloudProviderProperties.datacenter.cost").toDouble
@@ -97,7 +110,11 @@ object Experiment3{
     logger.info("Created datacenter "+ datacenter.getName+"with host count"+datacenter.getHostList().size())
     datacenter
   }
-
+  /**
+   * Function creates the host for the cloudsim datacenter.
+   * @param host_number : This number will read data from the application.conf file
+   * @return host : returns a host
+   */
   def createHost(host_number : Int ) : NetworkHost = {
     val scheduler = config.getString("Experiment3.CloudProviderProperties.host"+host_number+".schedule")
     val mips = config.getString("Experiment3.CloudProviderProperties.host"+host_number+".mipsCapacity").toInt
@@ -115,7 +132,10 @@ object Experiment3{
     logger.info("Created Host "+ host.getId)
     host
   }
-
+  /**
+   * Function creates the vm for the cloudsim. Can edit the vM configuration in the application.conf.Experiment2.vm
+   * @return Vm  : returns the Vm created
+   */
   def createVm() : NetworkVm ={
     val virtualMachine_Mips = config.getString("Experiment3.CloudProviderProperties.vm.mipsCapacity").toInt
     val virtualMachine_Pes = config.getString("Experiment3.CloudProviderProperties.vm.pes").toInt
@@ -128,7 +148,11 @@ object Experiment3{
     logger.info("Created VM"+vm.getId)
     vm
   }
-
+  /**
+   * This function is used to create clouldlets for the experiment.
+   * @param cloudLetNumber : This number helps in getting the configuraiton from application.conf file
+   * @return List[[Cloudlet]] : Returns a list of Clouldlets.
+   */
   def createCloudlets(vmList:List[NetworkVm]) : List[Cloudlet] = {
     val utilRatio = config.getString("Experiment3.utilizationRatio").toDouble
     val MaxResourceUtil = config.getString("Experiment3.maxResourceRatio").toDouble
@@ -156,6 +180,11 @@ object Experiment3{
     cloudletList.toList
   }
 
+  /**
+   * This function is used to create a netowrk for the datacenters
+   * @param dc : Input the networkData center
+   * @param simulation : Input the cloud Simulation
+   */
   def createNetwork(dc: NetworkDatacenter, simulation: CloudSim): Unit = {
     val edgeSwitches = List.fill(2) {
       val edgeSwitch = new EdgeSwitch(simulation, dc)
@@ -170,6 +199,12 @@ object Experiment3{
     })
   }
 
+  /**
+   * This function is used to create a switch index for the host
+   * @param host : host of the datacenter
+   * @param switchPorts : The switchports
+   * @return
+   */
   def getSwitchIndex(host: NetworkHost, switchPorts: Int): Int = Math.round(host.getId % Integer.MAX_VALUE) / switchPorts
 
 }
